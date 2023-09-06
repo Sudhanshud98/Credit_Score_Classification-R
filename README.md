@@ -1,24 +1,22 @@
 # Credit Score Classification
-This project aims to build predictive models to classify credit scores into good/bad and standard/good categories based on customer attributes. Logistic regression models are developed and evaluated.
+This project analyzes factors affecting credit scores using various machine learning models. The goal is to understand relationships between credit profile characteristics and classify scores.
 
 ## Data
-The data is from a Kaggle dataset containing information on 690 customers and their credit characteristics. Features include age, income, payment history, accounts, etc.
+The data is from Kaggle containing 30,349 records and 17 variables on 690 customers.
 
-## Methodology
-The target was transformed into binary variables for classification
-Features were cleaned and normalized
-Univariate and correlation analysis was performed
-Logistic regression models were built for each target
-Model performance was evaluated on classification accuracy
+## Models
+Linear Regression
+Logistic Regression
+KNN
+Decision Tree
+
+## Analysis
+EDA finds correlations between variables like credit mix and score
+Models evaluate the effects of payment history, debt, age, etc. on scores
+Optimal KNN k and variable importances are identified
 
 ## Key Findings
-Payment history, credit mix, and credit inquiries were significant predictors
-The model achieved 84% accuracy on the good/bad classification
-Credit history age, balance, and mix predicted standard vs. good at 76%
-
-## Usage
-Clone this repository
-Install requirements
-Run notebooks to reproduce the analysis
-
-Please feel free to contact me if you have any other questions!
+Credit mix, inquiries, and cards lower scores while history and debt raise it
+LR predicts an individual's likelihood of good vs. standard category
+KNN accuracy is highest at k=7
+DT and LR classify profiles similarly
