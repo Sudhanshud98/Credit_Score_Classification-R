@@ -1,0 +1,519 @@
+```{r init, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+library(ezids)
+# knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+options(scientific=T, digits = 3) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+```
+
+```{r include=FALSE}
+library(ezids)
+midterm = data.frame(read.csv("dataset/train.csv"))
+midterm2 = subset(midterm, Month=="January")
+str(midterm2)
+#xkabledply(summary(midterm2))
+nrow(midterm2)
+
+midterm2_subset <- midterm2[ , names(midterm2) %in% c("Age", "Num_of_Delayed_Payment", "Credit_Mix", "Total_EMI_per_month", "Credit_Score")]
+#str(midterm2_subset)
+#xkabledply(summary(midterm2_subset))
+#nrow(midterm2_subset)
+
+### for the future analysis
+#midterm2_subset <- midterm2[ , names(midterm2) %in% c("ID", "Name", "Age", "Annual_Income", "Num_Bank_Accounts", "Num_Credit_Card", "Interest_Rate", "Num_of_Loan", "Num_of_Delayed_Payment", "Credit_Mix", "Total_EMI_per_month", "Monthly_Balance", "Credit_Score")]
+#str(midterm2_subset)
+#summary(midterm2_subset)
+#nrow(midterm2_subset)
+```
+
+```{r echo=FALSE}
+# midterm2_subset =
+library('dplyr')
+library('purrr')
+library('tidyr')
+library("stringr")
+```
+
+```{r Brooklyn_1, echo=FALSE}
+# "Age"
+# Removed Special Characters & Changed the data type into "int"
+midterm2_subset$Age <- gsub("[[:punct:]]", "", midterm2_subset$Age)
+midterm2_subset$Age <- as.integer(midterm2_subset$Age)
+
+### for the future analysis
+# "Annual_Income"
+# Removed Special Characters & Changed the data type into "num" & Rounded
+# midterm2_subset$Annual_Income <- as.numeric(sub("_", "", midterm2_subset$Annual_Income))
+
+```
+
+```{r HaeLee_1, echo=FALSE}
+# "Num_of_Delayed_Payment"
+# Removed Special Characters & Changed the data type from "char" to "int"
+midterm2_subset$Num_of_Delayed_Payment <- gsub("[[:punct:]]", "", midterm2_subset$Num_of_Delayed_Payment)
+midterm2_subset$Num_of_Delayed_Payment <- as.integer(midterm2_subset$Num_of_Delayed_Payment)
+
+### for the future analysis
+# "Num_of_Loan" 
+# Removed Special Characters & Changed the data type from "char" to "int"
+# midterm2_subset$Num_of_Loan <- gsub("[[:punct:]]", "", midterm2_subset$Num_of_Loan)
+# midterm2_subset$Num_of_Loan <- as.integer(midterm2_subset$Num_of_Loan)
+
+# "Num_of_Loan"
+# Removed value below 0 
+# midterm2_subset <- midterm2_subset[midterm2_subset['Num_of_Loan'] >= 0, ]
+```
+
+```{r Upmanyu_1, echo=FALSE}
+# "Credit_Mix"
+# Removed Special Characters 
+# Converted "char" into "int" from "Good" to 3, "Standard" to 2, and "Bad" to 1
+midterm2_subset <- midterm2_subset[midterm2_subset['Credit_Mix'] != "_",]
+midterm2_subset$Credit_Mix[midterm2_subset$Credit_Mix == 'Bad'] <- 1
+midterm2_subset$Credit_Mix[midterm2_subset$Credit_Mix == 'Standard'] <- 2
+midterm2_subset$Credit_Mix[midterm2_subset$Credit_Mix == 'Good'] <- 3
+midterm2_subset$Credit_Mix <- as.integer(midterm2_subset$Credit_Mix)
+```
+
+```{r Sudhanshu_1, echo=FALSE}
+# Rounded "Total_EMI_per_month"
+midterm2_subset["Total_EMI_per_month"] <- 
+round(midterm2_subset["Total_EMI_per_month"], digits = 2)
+
+# "Credit_score"
+# Removed Special Characters
+midterm2_subset <- midterm2_subset[midterm2_subset['Credit_Score'] != "_",]
+
+### for the future analysis
+# "Monthly_Balance"
+# Converted into "int" and rounded 
+# midterm2_subset$Monthly_Balance <- as.integer(midterm2_subset$Monthly_Balance)
+# midterm2_subset["Monthly_Balance"] <- round(midterm2_subset["Monthly_Balance"], digits = 2)
+```
+
+```{r Brooklyn_2, echo=FALSE}
+midterm2_subset$Credit_Score <- factor(midterm2_subset$Credit_Score , levels=c('Poor', 'Standard', 'Good'))
+```
+
+```{r HaeLee_2, echo=FALSE}
+# midterm2_subset$Credit_Score = as.factor(midterm2_subset$Credit_Score)
+df=outlierKD2(midterm2_subset, Num_of_Delayed_Payment, TRUE, FALSE, FALSE, FALSE)
+# smmary(Poor)ummary(df)
+# nrow(df)
+```
+```{r Upmanyu_2, echo=FALSE}
+# Removed NA from data
+midterm2_subset = na.omit(midterm2_subset)
+# Filtered out a group age under 18 and greater than 100
+midterm2_subset<-midterm2_subset[(midterm2_subset$Age > 17) & (midterm2_subset$Age < 100),]
+```
+
+```{r echo=FALSE}
+#summary(midterm2_subset)
+xkabledply(summary(midterm2_subset))
+str(midterm2_subset)
+```
+
+```{r echo=FALSE}
+library(ggplot2)
+```
+
+```{r include=FALSE}
+df = outlierKD2(midterm2_subset, Num_of_Delayed_Payment, rm=T)
+df = outlierKD2(df, Total_EMI_per_month, rm=T)
+df = outlierKD2(df, Age, rm=T)
+# summary(df)
+# nrow(df)
+```
+### Team 2 Thunder
+
+## Chapter 1: Introduction - Sudahnsu
+
+A credit score is a numerical expression that represents an individuals creditworthiness based on a level study of their credit files. A credit score is generally determined by a credit report, which is normally obtained from credit agencies.
+
+Credit scores are used by lenders, such as banks and credit card firms, to assess the risk of lending money to clients and to reduce losses due to bad debt. Credit scores are used by lenders to evaluate who qualifies for a loan, at what interest rate, and with what credit restrictions. Credit scores are also used by lenders to evaluate which consumers are likely to generate the greatest income.
+
+There are several credit score formulas in use, each having unique characteristics: -
+The FICO Score – The Fair Isaac Corporation has introduced the FICO score model which has now emerged as the most widely accepted credit scoring model in the industry. The FICO score scale runs between 300 to 850 points.
+
+The PLUS Score is another user-friendly credit score model which was developed by Experian with scores ranging from 330 to 830, to help customers understand how lenders view their creditworthiness. Higher scores represent a greater likelihood that the customers would pay back their debts.
+
+The Vantage Score- Vantage Score created by Experian, TransUnion, and Equifax is a new credit scoring model to support a consistent and accurate approach to credit scoring. This score provides lenders with nearly the same risk assessment across all three credit reporting companies, and the Vantage scale ranges from 501 to 990.
+
+### 1.1 Why did we choose this topic?
+
+The world is continuously changing and evolving, which implies that our interactions with money are changing as well. As more individuals use credit to make purchases, knowing credit ratings is becoming increasingly crucial. This is especially true for those trying to purchase a home or a vehicle. A strong credit score may save you thousands of dollars in interest payments, but a negative credit score can cost you thousands of dollars in extra interest payments.
+
+Classifying credit scores is a difficult task because there are so many different factors that go into them. However, it is an important task because it can help people understand what they need to do to improve their credit scores. In this project, we will be using different graphs and plots to show the data distribution and its normality. We will be using data from the Kaggle website, which contains over 100,000 rows of data on various aspects of credit scores.
+
+### 1.2 What prior research and analysis have been done on this topic
+
+<<<<<<< Updated upstream
+=======
+There are few research papers on this topic and we took reference from some of them for out project. 
+
+1. A Better Comparison Summary of Credit Scoring Classification
+
+The goal of credit scoring is to categorize a customers credit as defaulter or non-defaulter. With increased boosting and smoothing of model parameters, credit risk analysis becomes more effective. The purpose of this work is to investigate credit score categorization models with and without imputation. However, data availability is minimal in the absence of imputation due to missing values depletion from the huge dataset. On the other hand, imputation-based dataset classification accuracy with the linear approach of ANN outperforms other models. When boosting and smoothing models are compared, the error rate is a better statistic than the area under curve (AUC) ratio.
+
+2. Statistical Classification Methods in Consumer Credit Scoring: a Review
+
+Credit scoring refers to formal statistical approaches for categorizing credit applicants into "good" and "poor" risk classifications. With the tremendous expansion in consumer credit in recent years, such measures have become increasingly significant. A broad number of statistical approaches have been used, albeit the literature available to the public is limited due to business secrecy. Particular challenges emerging in the context of credit scoring are investigated, and the statistical approaches used are discussed.
+
+>>>>>>> Stashed changes
+This report is organized as follows:
+SMART questions
+Description of the Data
+EDA - Hypothesis test for Credit Mix
+EDA - Hypothesis test for the Number of Delayed Payment
+EDA - Hypothesis test for Total EMI per Month
+EDA - Hypothesis test for Age
+Conclusion
+Reference
+
+## Chapter 2: SMART Questions -Brooklyn
+
+### 2.1 How did they come up?
+
+To discover the factors affecting the credit score in this credit score dataset, we researched different credit scoring models. Based on the articles, five factors usually play a significant role in credit scores, including credit mix, delayed payment, EMI, and credit history. As a result, we came up with four SMART questions:  
+**1. Is there a relationship between credit mix and credit score?**  
+**2. Does the number of delayed payments significantly affect the credit score?**  
+**3. Whether the averages of Total EMI per month between different Credit Score groups are significantly different?**  
+**4. Does age affect credit score?**  
+
+Resource:
+https://www.experian.com/blogs/ask-experian/credit-education/score-basics/what-affects-your-credit-scores/
+
+
+## Chapter 3: Description of the Data - HaeLee
+
+### 3.1 Preparation of the Raw Data
+To test our SMART questions, we collected the ‘Credit Classification’ dataset from Kaggle (Source: https://www.kaggle.com/datasets/parisrohan/credit-score-classification). After we checked the characteristics of the dataset, we found that this dataset is panel data, which tracks 12000 individuals’ credit information from January to August. However, due to the short period, the variations of variables are almost zero, for example, one individual’s annual income and credit score from January to August are the same, which prevented us from using this dataset for panel analysis. For this reason, we decided not to use the dataset as a panel dataset and extract one month - in our analysis ‘January’- among 8 months for each individual. After filtering, our final raw dataset consists of 12000 individuals’ January information for 28 variables.
+
+### 3.2 Summary of the Raw Data***
+Based on the filtered dataset, our dataset has 12500 observations across 28 variables. Please see below the dataset’s structure and variable descriptions.
+
+### 3.3 Preparation for EDA ***
+For the exploratory data analysis (EDA), our team subsetted the dataset for 5 variables – Credit Score and 4 independent variables including Credit Mix, the Number of Delayed Payment, the Total EMI per Month, and the Age that our team assumed to be related to credit score.  Based on this dataset with 5 variables on 12500 individuals, we started to prepare EDA.
+First, we cleaned the data accordingly. Our team dropped “NA” values from the dataset and outliers for all variables by using the function of ezids::outlierKD2. Second, we changed the data type of ‘Age’ and ‘Num_of_Delayed_Payment’ from character to integer and converted ‘Credit_Mix’ from ‘Good’ to 3, ‘Standard’ to 2, and ‘Bad’ to 1. Also, we converted ‘Credit_Score’ into a factor variable, which will be mentioned in Chapter 4 again. Lastly, we dropped observations with ages below 18 and over 100 to limit invalid observations.
+
+### 3.4 Limitation of the dataset and Additional Information for Help
+There are several limitations in the datasets used in our exploratory data analysis. First, as mentioned above, we used 12500 individuals’ information only from ‘January’. If this dataset were collected annually, not monthly, we could use the whole dataset for panel analyses since it could show more variations between years for one individual. Second, we only included 5 variables in our final subsetted dataset for EDA. Since we only used the limited number of independent variables that we assumed to be closely related to credit score, our dataset was created to focus more on testing our hypotheses. However, in future analyses, based on a more rigorous literature review, we will include additional information such as annual income, credit history, and the number of credit cards in the dataset as control variables in the model.
+
+
+## Chapter 4: EDA - Hypothesis test for Credit mix
+
+### 4.1 Hypothesis
+H0: Credit Mix and Credit Score are independent  
+H1: Credit Mix and Credit Score are not independent
+
+### 4.2 What is Credit Mix
+A credit mix refers to the diversity of credit accounts bank users have. In general, it is one factor that affects your credit scores, even though the proportion calculated is determined by the credit scoring model used. Generally, a diverse credit mix indicates that the bank user has been accountable for managing his/her different types of credit accounts over time. The four general types of credit accounts on credit reports are installment loans, revolving debt, mortgage accounts, and open accounts.
+Reference: https://www.equifax.com/personal/education/credit/score/what-is-a-credit-mix/
+
+### 4.3 Why Converted Credit Score to Factor
+To specify the order of the levels, Credit Score was converted to factor to do analysis. We sequenced the levels of Credit Scores from poor to good.
+
+### 4.4 Credit Mix Distribution: Histogram
+The histogram of the credit mix shows the distribution of the credit mix. Furthermore, we noticed that people who had good credit scores all held a good credit mix. On the other hand, people who had poor or standard credit scores may hold three different levels of credit mix.
+
+```{r Histogram for Credit Mix, echo=FALSE}
+ggplot(df, aes(x=Credit_Mix, fill = Credit_Score)) + geom_histogram(binwidth = 1) + ggtitle ("Credit_Mix") + xlab("Credit_Mix") + ylab("Total count")
+```
+
+### 5.5 Chi-Square Test
+To test whether Credit Mix and Credit Score are related or not, we used the Chi-square test of independence to analyze the two categorical variables. The hypothesis is that Credit Mix and Credit Score are independent.
+The contingency table shows the frequency values of two variables presented simultaneously.
+The cross table refers to the expected values of the frequencies between Credit Mix and Credit Score.
+
+```{r Chi-Square Test for Credit Mix, echo=FALSE}
+mix = table(df$Credit_Mix, midterm2_subset$Credit_Score)
+rownames(mix) <- c("Bad","Standard","Good")
+xkabledply(mix, title="Contingency table for Credit_Mix vs Credit_Score")
+
+chitest = chisq.test(mix)
+print(chitest)
+
+# expected values
+xkabledply(chitest$expected, title = "Cross table for the expected frequencies between Credit_Mix and Credit_Score")
+```
+
+### 5.6 Result
+The contingency table indicates that people who hold a bad credit mix have a much higher frequency to have a bad credit score. For those who hold a standard credit mix, there is a higher frequency they also have a standard credit score. The people who hold a good credit mix all have good credit scores. This contingency table meets the result presented in the histogram.
+
+The cross table of expected frequencies shows the values we would expect to see if the null hypothesis is true. By comparing the values in the contingency table and the expected frequencies table, it is obvious that there is a big difference between the two tables.
+
+Since the p-value of the Chi-square test < 0.05, the null hypothesis is rejected. As a result, we can conclude that Credit Mix and Credit Score are not independent.
+
+## Chapter 5: EDA - Hypothesis test for the Number of Delayed Payment
+
+### 5.1 Hypothesis
+The next SMART question is 'will the number of delayed payments significantly affect the credit score?' To answer this question, we made a hypothesis to test if the averages of the delayed payment in each credit score group are the same or not.
+
+H0: The averages of the number of delayed payments in poor, standard, and good credit score groups are the same.
+H1: The averages of the number of delayed payments in poor, standard, and good credit score groups are not the same.
+
+### 5.2 Creation of Three Subsets: Poor, Standard, and Good Credit Score Groups
+Since the credit score is a categorical variable in the dataset, we decided to divide the dataset into three subsets – poor, standard, and good credit score groups to check if each variable has a different mean and standard deviation between groups.
+These are the summaries of each group, and we can find that means of credit score are different between groups. Also, we could find that means and medians are different for our testing variables, the number of delayed payments, total EMI per month, and age between subsets. Therefore, we decided to use subsets for checking the normality for each variable in the following chapters.
+
+### 5.3 Distribution: Histogram
+To check the distribution, we created four different histograms. The first histogram including all three credit score groups shows an almost bell-shaped normal distribution, which is a bit skewed to the right. Once we plotted histograms for each group, we can find that the poor credit score group’s distribution is left-skewed and the good credit score group’s distribution is right-skewed. It can roughly indicate that a greater number of delayed payments are observed in the group and a smaller number of delayed payments in the good credit score group.
+<<<<<<< Updated upstream
+
+### 5.4 QQ-Plot
+For the further test for normality, we also plotted the QQ Plot and checked the skewness of our data. Although the first QQ-plot for all groups shows that our data is well distributed, the other two QQ-plots for poor and good groups are skewed, which supports our previous results in histograms.
+
+### 5.5 Boxplot
+Since we found some clues about the relationship between the number of delayed payments and credit score, we started to plot the boxplot for checking the median differences between groups visually. As shown in the graph, the better credit scores the less the number of delayed payments. In the poor credit score group, the median number of delayed payments is 17, the standard group’s median is 14, and the good credit score group’s median of delayed payments is 7 separately.
+
+### 5.6 ANOVA & ad hoc Tuckey
+To test our hypothesis, we decided to use the ANOVA test and got 0 for the p-value below 0.05, which reject the null. Based on the result, we can simply conclude that the averages of the number of delayed payments between the three groups are not significantly the same. However, we decided to analyze the post hoc Tukey test for checking which specific comparisons are statistically different. After performing the post hoc Tukey test, we could find that all p-values are less than 0.05 and concluded that all different pairs of groups - good-standard, standard-poor, and good-standard - are significantly different.  
+=======
+```{r echo=FALSE}
+Poor = subset(df, df$Credit_Score == 'Poor')
+Standard = subset(df, df$Credit_Score == 'Standard')
+Good = subset(df, df$Credit_Score == 'Good')
+
+# Construct t-intervals for the Number of Delayed Payment
+# All Groups
+delay_All = t.test(x=df$Num_of_Delayed_Payment)
+delay_All
+# Poor Group
+delay_Poor = t.test(x=Poor$Num_of_Delayed_Payment)
+delay_Poor
+# Standard Group
+delay_Standard = t.test(x=Standard$Num_of_Delayed_Payment)
+delay_Standard
+# Good Group
+delay_Good = t.test(x=Good$Num_of_Delayed_Payment)
+delay_Good
+
+
+# All Groups by colors
+ggplot(df, aes(x=Num_of_Delayed_Payment, fill = Credit_Score)) + geom_histogram(binwidth = 1) + ggtitle ("Histogram of the Number of Delayed Payment") + xlab("Number of Delayed Payment") + ylab("Total count")
+# All Groups
+ggplot(df, aes(Num_of_Delayed_Payment)) + geom_histogram(fill="yellow") + ggtitle("Histogram of the Number of Delayed Payment") 
+# Poor Group
+ggplot(Poor, aes(Num_of_Delayed_Payment)) + geom_histogram(fill="red") + ggtitle("Histogram of the Number of Delayed Payment in Poor Credit Score Group") + xlab("Number of Delayed Payment in Poor Group")
+# Standard Group
+ggplot(Standard, aes(Num_of_Delayed_Payment)) + geom_histogram(fill="green") + ggtitle("Histogram of Number of Delayed Payment in Standard Credit Score Group") + xlab("Number of Delayed Payment in Standard Group")
+# Good Group
+ggplot(Good, aes(Num_of_Delayed_Payment)) + geom_histogram(fill="blue") + ggtitle("Histogram of Number of Delayed Payment in Good Credit Score Group") + xlab("Number of Delayed Payment in Good Group")
+```
+
+### 5.4 QQ-Plot
+For the further test for normality, we also plotted the QQ Plot and checked the skewness of our data. Although the first QQ-plot for all groups shows that our data is well distributed, the other two QQ-plots for poor and good groups are skewed, which supports our previous results in histograms.
+```{r echo=FALSE}
+# All Group
+qqnorm(df$Num_of_Delayed_Payment, col="dodgerblue2", main="QQ-plot of the Number of Delayed Payment")
+qqline(df$Num_of_Delayed_Payment)
+# Poor Group
+qqnorm(Poor$Num_of_Delayed_Payment, col="red", main="QQ-plot of the Number of Delayed Payment in Poor Credit Score Group")
+qqline(Poor$Num_of_Delayed_Payment)
+# Standard Group
+qqnorm(Poor$Num_of_Delayed_Payment, col="green", main="QQ-plot of the Number of Delayed Payment in Standard Credit Score Group")
+qqline(Poor$Num_of_Delayed_Payment)
+# Good Group
+qqnorm(Poor$Num_of_Delayed_Payment, col="blue", main="QQ-plot of the Number of Delayed Payment in Good Credit Score Group")
+qqline(Poor$Num_of_Delayed_Payment)
+```
+
+### 5.5 Boxplot
+Since we found some clues about the relationship between the number of delayed payments and credit score, we started to plot the boxplot for checking the median differences between groups visually. As shown in the graph, the better credit scores the less the number of delayed payments. In the poor credit score group, the median number of delayed payments is 17, the standard group’s median is 14, and the good credit score group’s median of delayed payments is 7 separately.
+```{r echo=FALSE}
+ggplot(df, aes(x=Credit_Score, y=Num_of_Delayed_Payment)) + geom_boxplot( colour=c("red","green","blue")) +
+  labs(title="Boxplot of the Number of Delayed Payment with different Credit Scores", x="Credit Score", y = "Number of Delayed Payment")
+```
+
+### 5.6 ANOVA & ad hoc Tuckey
+To test our hypothesis, we decided to use the ANOVA test and got 0 for the p-value below 0.05, which reject the null. Based on the result, we can simply conclude that the averages of the number of delayed payments between the three groups are not significantly the same. However, we decided to analyze the post hoc Tukey test for checking which specific comparisons are statistically different. After performing the post hoc Tukey test, we could find that all p-values are less than 0.05 and concluded that all different pairs of groups - good-standard, standard-poor, and good-standard - are significantly different.
+```{r echo=FALSE}
+# Does the three subgroups have different the Number of Delayed Payment average?
+anova_delayed = aov(Num_of_Delayed_Payment ~ Credit_Score, data=df)
+anova_delayed
+names(anova_delayed)
+xkabledply(anova_delayed, title = "ANOVA result summary the Number of Delayed Payment between Credit Score")
+
+# Since they are not all the same, we need to follow up with a post-hoc test.
+tukeyAoV <- TukeyHSD(anova_delayed)
+tukeyAoV
+```
+>>>>>>> Stashed changes
+
+### 5.7 Result
+Based on our analyses using ANOVA and ad-hoc Tukey tests, all p-values are less than 0.05. We can reject the null hypothesis and conclude that the averages of the number of delayed payments in poor, standard, and good credit score groups are not the same.
+
+## Chapter 6: EDA - Hypothesis test for the Total EMI per Month
+
+### 6.1 Hypothesis
+H0: The averages of monthly EMI in poor, standard, and good credit score groups are the same.
+H1: The averages of monthly EMI in poor, standard, and good credit score groups are not the same.
+
+### 6.2 What is the Total EMI?
+EMI is nothing but the total cost of the product that we have purchased and divide that amount into equal parts which we pay each month on particular data until the whole amount is paid.
+
+### 6.3 Distribution: Histogram
+To check the distribution of the data we plotted the first histogram, but we are unable to see the total distribution as there are many people with no EMI or zero EMI per month, so we divided the data into two subgroups. The first subgroup contains the data of the user having no EMI or zero EMI and the second subgroup contains the data of the user with EMI. Now we can see the differences, in the histogram of the first subgroup we can see that most of the users are in two credit score groups that are Standard and Good. In the histogram of the second subgroup, we can see that the data is more skewed to the right.
+
+<<<<<<< Updated upstream
+```{r}
+# Histogram Codes
+=======
+```{r echo=FALSE}
+# EDA for Total EMI
+zero_emi <- subset(df, Total_EMI_per_month == 0)
+str(zero_emi)
+non_zero_emi <- subset(df, Total_EMI_per_month != 0)
+
+Total_Emi = t.test(x=df$Total_EMI_per_month)
+Total_Emi
+
+non_zero_emi_t = t.test(x=non_zero_emi$Total_EMI_per_month)
+non_zero_emi_t
+
+# Histogram Codes
+# All Groups by colors
+ggplot(df, aes(x=Total_EMI_per_month, fill = Credit_Score)) + geom_histogram(binwidth = 1) + ggtitle ("Histogram of the Total EMI per Month") + xlab("Total EMI per Month") + ylab("Total count")
+# EMI Zero Group 
+ggplot(zero_emi, aes(x=Total_EMI_per_month, fill = Credit_Score)) + geom_histogram(binwidth = 1) + ggtitle ("Histogram of the Total EMI per Month") + xlab("Total EMI per Month") + ylab("Total count")
+# EMI Non-Zero Group
+ggplot(non_zero_emi, aes(x=Total_EMI_per_month, fill = Credit_Score)) + geom_histogram(binwidth = 1) + ggtitle ("Histogram of the Total EMI per Month") + xlab("Total EMI per Month") + ylab("Total count")
+>>>>>>> Stashed changes
+```
+
+
+### 6.4 QQ-Plot
+To check the normality of the data we will now plot the QQ Plot and check the skewness of the data we got in the histogram is correct or not. So, in the first QQ Plot we can see the data is still skewed but to cross-check we draw the two plots from the subset of users with zero EMI and users with EMI still, we can see for the plot for users with EMI is still skewed.
+
+<<<<<<< Updated upstream
+```{r}
+=======
+```{r echo=FALSE}
+# All Group
+qqnorm(df$Total_EMI_per_month, col="dodgerblue2", main="QQ-plot of the Total EMI per month")
+qqline(df$Total_EMI_per_month)
+# Zero EMI Group
+qqnorm(zero_emi$Total_EMI_per_month, col="red", main="QQ-plot of the Total EMI per month in zero EMI Group")
+qqline(zero_emi$Total_EMI_per_month)
+# Non zero Group
+qqnorm(non_zero_emi$Total_EMI_per_month, col="green", main="QQ-plot of the Total EMI per month in non zero EMI Group")
+qqline(non_zero_emi$Total_EMI_per_month)
+>>>>>>> Stashed changes
+```
+
+### 6.5 Boxplot
+We decided to move forward with the plotting of the box plot for the Total EMI per month column versus the Credit score. Here we can see that the users the good credit score have a median of 50, users with standard credit scores have a median of 57 whereas the users with poor credit scores have a median of 71. So, we can see that having a lower EMI per month will result in a good credit score. As we can see the difference between the median of the three subgroups' credit scores so we may say that they are different from each other.
+<<<<<<< Updated upstream
+```{r}
+=======
+```{r echo=FALSE}
+ggplot(df, aes(x=Credit_Score, y=Total_EMI_per_month)) + geom_boxplot( colour=c("red","green","blue")) +
+  labs(title="Boxplot of the Total EMI per month with different Credit Scores", x="Credit Score", y = "Number Total_EMI_per_month")
+>>>>>>> Stashed changes
+```
+
+### 6.6 ANOVA & ad hoc Tuckey
+To confirm our finding and to make sure all three subgroups of credit score are different we performed the ANOVA test where we got the P-value less than the standard value of 0.05 so we can say that the three subgroups of the credit score are different from each other. For further investigation, we performed the Post-Hoc Tukey test where we can see that the subgroup Standard-Poor and Good-Poor are significantly different as the P-value for these pairs are less than the standard P-value but for the third pair Good-Standard, we can't say that pair is significantly different as the P-value is greater than standard P-value.
+
+<<<<<<< Updated upstream
+```{r}
+=======
+```{r echo=FALSE}
+# Does the three subgroups have different the Number of Delayed Payment average?
+# All Group
+anova_toal_emi = aov(Total_EMI_per_month ~ Credit_Score, data=df)
+anova_toal_emi
+names(anova_toal_emi)
+xkabledply(anova_toal_emi, title = "ANOVA result summary total EMI per month between Credit Score")
+# All group
+tukeyAoVemi_All <- TukeyHSD(anova_toal_emi)
+tukeyAoVemi_All
+>>>>>>> Stashed changes
+```
+
+### 6.7 Result
+Since the p-value of the ANOVA test < 0.05, the null hypothesis is rejected. As a result, we can say that the averages of Total EMI per month between different Credit Score groups are significantly different.
+
+## Chapter 7: EDA - Hypothesis test for Age
+
+### 7.1 Hypothesis
+H0: The averages of age in poor, standard, and good groups are the same.
+H1: The averages of age in poor, standard, and good groups are not the same
+
+### 7.2 Why Age instead of credit history?
+Age is the variable that may or may not impact the credit score. On the other hand, it is well knowledge that credit history influences credit score (https://www.credit.com/credit-reports/tips-for-improving-your-credit-age-of-credit-history). Therefore, we chose age, as it may be intriguing to observe age as one of the credit score components.
+
+### 7.3 Histogram
+The distribution of the Histogram informs us that the graph appears slightly right skewed, and if we divide the distribution into three groups (poor, standard, and good), all but the Good group are nearly normal in nature. It is particularly prevalent among older age groups. Therefore, people with a strong credit scores are more likely to be older.
+<<<<<<< Updated upstream
+
+### 7.4 Boxplot
+After constructing a boxplot, we observe that the means and medians of the groups are distinct, but the means and medians of each group are unequal, indicating that the distribution is not normal. Another interpretation of the boxplot is that as the credit score improves, the median of each group rises, with the median of the good credit score being the highest.
+
+### 7.5 ANOVA & ad hoc Tuckey
+As there are more than two groups to analyze, we chose ANOVA. ANOVA determines whether or not there are statistically significant differences between the means of three or more independent groups. The p-value for the Age on ANOVA test was less than 0.05, indicating that all groups are statistically different from one another. On the other hand, the post hoc Tuckey test, which is used to compare all groups to each other (i.e., all possible comparisons of 2 groups), revealed that each pair of groups has a p-value of less than 0.05 and is distinct from the others.
+=======
+```{r echo=FALSE}
+# All Groups
+ggplot(df, aes(x=Age, fill = Credit_Score)) + geom_histogram(bins=8) + ggtitle ("Histogram of the Age") + xlab("Age") + ylab("Total count")
+
+# Poor Group
+ggplot(df[df['Credit_Score']=='Poor',], aes(Age)) + geom_histogram(fill="red",bins = 8) + ggtitle("Histogram of the Age in Poor Credit Score Group") + xlab("Age in Poor Group")
+
+# Standard Group
+ggplot(df[df['Credit_Score']=='Standard',], aes(Age)) + geom_histogram(fill="green",bins = 8) + ggtitle("Histogram of Age in Standard Credit Score Group") + xlab("Age in Standard Group")
+
+# Good Group
+ggplot(df[df['Credit_Score']=='Good',], aes(Age)) + geom_histogram(fill="blue",bins=8) + ggtitle("Histogram of Age in Good Credit Score Group") + xlab("Age in Good Group")
+```
+
+### 7.4 Boxplot
+After constructing a boxplot, we observe that the means and medians of the groups are distinct, but the means and medians of each group are unequal, indicating that the distribution is not normal. Another interpretation of the boxplot is that as the credit score improves, the median of each group rises, with the median of the good credit score being the highest.
+```{r echo=FALSE}
+ggplot(df, aes(x=Credit_Score, y=Age)) + geom_boxplot( colour=c("red","green","blue")) +
+  labs(title="Boxplot of the Age", x="Credit Score", y = "Age")
+```
+
+### 7.5 ANOVA & ad hoc Tuckey
+As there are more than two groups to analyze, we chose ANOVA. ANOVA determines whether or not there are statistically significant differences between the means of three or more independent groups. The p-value for the Age on ANOVA test was less than 0.05, indicating that all groups are statistically different from one another. On the other hand, the post hoc Tuckey test, which is used to compare all groups to each other (i.e., all possible comparisons of 2 groups), revealed that each pair of groups has a p-value of less than 0.05 and is distinct from the others.
+```{r echo=FALSE}
+anova_delayed1 = aov(Age ~ Credit_Score, data=df)
+anova_delayed1
+names(anova_delayed1)
+xkabledply(anova_delayed1, title = "ANOVA result summary the Age between Credit Score")
+
+
+# Post-hoc Tukey HSD for Age
+
+tukeyAoV1 <- TukeyHSD(anova_delayed)
+tukeyAoV1
+```
+
+>>>>>>> Stashed changes
+
+### 7.6 Result
+Age affects credit score, as shown by the fact that when credit score increases from poor to good, the median age likewise rises (in Boxplot), leading to the conclusion that persons with a higher age have a good credit score.
+
+## Chapter 8: Conclusion - Upmanyu
+
+### 8.1 Draw conclusions
+a. We can see credit mix and credit score are not independent of each other. This was done when we tested independence between them using the Chi-square test.
+b. Number of delayed payments, Total EMI per month, and Age have undergone the ANOVA test for the difference between the mean of the three groups. All the variables have significant mean differences between the groups - poor, standard, and good credit score groups. Furthermore, we verified the ANOVA test by doing the post hoc Tuckey test, which also tells us that all the groups are significantly different from each other.
+
+### 8.2 Answer the SMART Questions
+As all the variables have a dependency on the credit score, we can say that all the factors credit mix, number of delayed payments, Total EMI, and Age have some correlation with the credit score. As we rejected the null hypothesis for all the variables, we can also say that the groups within all the variables are also significantly different from each other.
+
+<<<<<<< Updated upstream
+## Chapter 9: References
+=======
+## Chapter 9: References
+
+
+
+
+>>>>>>> Stashed changes

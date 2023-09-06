@@ -1,0 +1,846 @@
+---
+title: "Final Project Summary"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r init, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+library(ezids)
+# knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+options(scientific=T, digits = 3) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+```
+
+## Team 2 Thunder
+### Brooklyn Chen, HaeLee Kim, Sudhanshu Deshpande, and Upmanyu Singh
+
+# 1: Introduction
+
+A credit score is a numerical expression that represents an individuals creditworthiness based on a level study of their credit files. A credit score is generally determined by a credit report, which is normally obtained from credit agencies.
+
+Credit scores are used by lenders, such as banks and credit card firms, to assess the risk of lending money to clients and to reduce losses due to bad debt. Credit scores are used by lenders to evaluate who qualifies for a loan, at what interest rate, and with what credit restrictions. Credit scores are also used by lenders to evaluate which consumers are likely to generate the greatest income.
+
+There are several credit score formulas in use, each having unique characteristics: -
+The FICO Score – The Fair Isaac Corporation has introduced the FICO score model which has now emerged as the most widely accepted credit scoring model in the industry. The FICO score scale runs between 300 to 850 points.
+
+The PLUS Score is another user-friendly credit score model which was developed by Experian with scores ranging from 330 to 830, to help customers understand how lenders view their creditworthiness. Higher scores represent a greater likelihood that the customers would pay back their debts.
+
+The Vantage Score- Vantage Score created by Experian, TransUnion, and Equifax is a new credit scoring model to support a consistent and accurate approach to credit scoring. This score provides lenders with nearly the same risk assessment across all three credit reporting companies, and the Vantage scale ranges from 501 to 990.
+
+## 1.1 Why did we choose this topic?
+
+The world is continuously changing and evolving, which implies that our interactions with money are changing as well. As more individuals use credit to make purchases, knowing credit ratings is becoming increasingly crucial. This is especially true for those trying to purchase a home or a vehicle. A strong credit score may save you thousands of dollars in interest payments, but a negative credit score can cost you thousands of dollars in extra interest payments.
+
+Classifying credit scores is a difficult task because there are so many different factors that go into them. However, it is an important task because it can help people understand what they need to do to improve their credit scores. In this project, we will be using different graphs and plots to show the data distribution and its normality. We will be using data from the Kaggle website, which contains over 100,000 rows of data on various aspects of credit scores.
+
+## 1.2 What prior research and analysis have been done on this topic
+
+There are few research papers on this topic and we took reference from some of them for out project. 
+
+1. A Better Comparison Summary of Credit Scoring Classification
+
+According to (Imtiaz & J., 2017), the goal of credit scoring is to categorize a customers credit as defaulter or non-defaulter. With increased boosting and smoothing of model parameters, credit risk analysis becomes more effective. The purpose of this work is to investigate credit score categorization models with and without imputation. However, data availability is minimal in the absence of imputation due to missing values depletion from the huge dataset. On the other hand, imputation-based dataset classification accuracy with the linear approach of ANN outperforms other models. When boosting and smoothing models are compared, the error rate is a better statistic than the area under curve (AUC) ratio.
+
+2. Statistical Classification Methods in Consumer Credit Scoring: a Review
+
+According to (Hand & Henley, 1997), credit scoring refers to formal statistical approaches for categorizing credit applicants into "good" and "poor" risk classifications. With the tremendous expansion in consumer credit in recent years, such measures have become increasingly significant. A broad number of statistical approaches have been used, albeit the literature available to the public is limited due to business secrecy. Particular challenges emerging in the context of credit scoring are investigated, and the statistical approaches used are discussed.
+
+# 2: Description of the Data
+
+## 2.1 Preparation of the Raw Data
+To test our SMART questions, we collected the ‘Credit Classification’ dataset from Kaggle (Source: https://www.kaggle.com/datasets/parisrohan/credit-score-classification). After we checked the characteristics of the dataset, we found that this dataset is panel data, which tracks 12500 individuals’ credit information from January to August. 
+
+## 2.2 Summary of the Raw Data***
+Based on the dataset, our dataset has 30349 observations across 28 variables. Please see below the dataset’s structure and variable descriptions.
+
+## 2.3 Preparation for EDA ***
+For the exploratory data analysis (EDA), our team subsetted the dataset for 16 variables – Credit Score and 11 independent variables including Credit Mix, the Number of Delayed Payment, the Total EMI per Month, and the Age that our team assumed to be related to credit score.  Based on this dataset with 16 variables on 12500 individuals, we started to prepare EDA.
+First, we cleaned the data accordingly. Our team dropped “NA” values from the dataset and outliers for all variables by using the function of ezids::outlierKD2. For example, we changed the data type of ‘Age’ and ‘Num_of_Delayed_Payment’ from character to integer and converted ‘Credit_Mix’ from ‘Good’ to 3, ‘Standard’ to 2, and ‘Bad’ to 1. Also, we converted ‘Credit_Score’ into a factor variable, which will be mentioned in Chapter 4 again. Lastly, we dropped observations with ages below 18 and over 100 to limit invalid observations.
+
+## 2.4 Limitation of the dataset and Additional Information for Help
+There are several limitations in the datasets used in our exploratory data analysis. First, we only included 16 variables in our final subsetted dataset for EDA. Since we only used the limited number of independent variables that we assumed to be closely related to credit score, our dataset was created to focus more on testing our hypotheses.
+
+
+```{r}
+## Filtered the Raw Dataset for project
+library(stringr)
+final = data.frame(read.csv("dataset/train.csv"))
+df = final
+#df = subset(final, Month=="January")
+
+library(dplyr)
+names(df)
+
+df <- df[,c("Credit_Score","Credit_Mix","Credit_History_Age","Monthly_Balance","Num_of_Delayed_Payment","Total_EMI_per_month","Age","Outstanding_Debt","Num_Bank_Accounts","Num_Credit_Card","Num_of_Loan","Num_Credit_Inquiries","Monthly_Inhand_Salary","Amount_invested_monthly","Annual_Income","Month")]
+
+summary(df)
+str(df)
+# Credit_Score (o)
+# Credit_Mix (o),Credit_History_Age, Monthly_Balance (o)
+# Num_of_Delayed_Payment (o), Total_EMI_per_month (o), Age(o), Outstanding_Debt
+# Num_Bank_Accounts, Num_Credit_Card, Num_of_Loan (o), Num_Credit_Inquiries
+# Occupation, Montly_Inhand_Salary, Annual_Income (o), Amount_invested_monthly
+```
+
+
+
+```{r}
+### Data Cleaning
+## "Occupation"
+#df$Occupation <- replace(df$Occupation, df$Occupation=="_______", NA)
+#df$Occupation <- as.factor(df$Occupation)
+#df$Occupation = as.numeric(df$Occupation)
+
+## "Amount_invested_monthly"
+df$Amount_invested_monthly = as.numeric(df$Amount_invested_monthly)
+#df["Total_EMI_per_month"] <- round(df["Total_EMI_per_month"], digits = 2)
+
+## "Outstanding_Debt"
+df$Outstanding_Debt = str_replace(df$Outstanding_Debt,"_","")
+df$Outstanding_Debt = as.numeric(df$Outstanding_Debt)
+
+## "Credit_History_Age"
+library(stringr)
+df$Credit_History_Age = str_replace(df$Credit_History_Age,"Years and","")
+df$Credit_History_Age = str_replace(df$Credit_History_Age,"Months","")
+df$Credit_History_Age = str_replace(df$Credit_History_Age," ",".")
+df$Credit_History_Age = str_replace(df$Credit_History_Age," ","")
+df$Credit_History_Age = as.numeric(df$Credit_History_Age)
+
+## "Age"
+df$Age <- gsub("[[:punct:]]", "", df$Age)
+df$Age <- as.integer(df$Age)
+# Filtered out a group age under 18 and greater than 100
+df <- df[(df$Age > 17) & (df$Age < 100),]
+
+## "Annual_Income"
+#Removed Special Characters & Changed the data type into "num" & Rounded
+df$Annual_Income <- as.numeric(sub("_", "", df$Annual_Income))
+
+## "Num_of_Delayed_Payment"
+# Removed Special Characters & Changed the data type from "char" to "int"
+df$Num_of_Delayed_Payment <- gsub("[[:punct:]]", "", df$Num_of_Delayed_Payment)
+df$Num_of_Delayed_Payment <- as.integer(df$Num_of_Delayed_Payment)
+
+## "Num_of_Loan" 
+# Removed Special Characters & Changed the data type from "char" to "int"
+df$Num_of_Loan <- gsub("[[:punct:]]", "", df$Num_of_Loan)
+df$Num_of_Loan <- as.integer(df$Num_of_Loan)
+# Removed value below 0 
+df <- df[df['Num_of_Loan'] >= 0, ]
+
+## "Credit_Mix"
+# Removed Special Characters 
+# Converted "char" into "int" from "Good" to 3, "Standard" to 2, and "Bad" to 1
+df <- df[df['Credit_Mix'] != "_",]
+df$Credit_Mix[df$Credit_Mix == 'Bad'] <- 1
+df$Credit_Mix[df$Credit_Mix == 'Standard'] <- 2
+df$Credit_Mix[df$Credit_Mix == 'Good'] <- 3
+df$Credit_Mix <- as.integer(df$Credit_Mix)
+
+## "Total_EMI_per_month"
+df["Total_EMI_per_month"] <- round(df["Total_EMI_per_month"], digits = 2)
+
+## "Credit_score"
+# Removed Special Characters
+df <- df[df['Credit_Score'] != "_",]
+df$Credit_Score[(df$Credit_Score == 'Poor')] <- 1
+df$Credit_Score[(df$Credit_Score == 'Standard')] <- 2
+df$Credit_Score[(df$Credit_Score == 'Good')] <- 3
+df$Credit_Score <- as.integer(df$Credit_Score)
+
+## "Monthly_Balance"
+# Converted into "int" and rounded 
+df$Monthly_Balance <- as.integer(df$Monthly_Balance)
+df["Monthly_Balance"] <- round(df["Monthly_Balance"], digits = 2)
+
+## "Month"
+df$Month[(df$Month == 'January')] <- 1
+df$Month[(df$Month == 'February')] <- 2
+df$Month[(df$Month == 'March')] <- 3
+df$Month[(df$Month == 'April')] <- 4
+df$Month[(df$Month == 'May')] <- 5
+df$Month[(df$Month == 'June')] <- 6
+df$Month[(df$Month == 'July')] <- 7
+df$Month[(df$Month == 'August')] <- 8
+df$Month <- as.integer(df$Month)
+```
+
+```{r}
+## Removed NA from data
+df = na.omit(df)
+```
+
+
+```{r}
+## Removed Outliers 
+library(ezids)
+df = outlierKD2(df, Credit_History_Age, rm=T, histogram=FALSE)
+df = outlierKD2(df, Monthly_Balance, rm=T, histogram=FALSE)
+df = outlierKD2(df, Num_of_Delayed_Payment, rm=T, histogram=FALSE)
+df = outlierKD2(df, Total_EMI_per_month, rm=T, histogram=FALSE)
+df = outlierKD2(df, Age, rm=T, histogram=FALSE)
+df = outlierKD2(df, Outstanding_Debt, rm=T, histogram=FALSE)
+df = outlierKD2(df, Num_Bank_Accounts, rm=T, histogram=FALSE)
+df = outlierKD2(df, Num_Credit_Card, rm=T, histogram=FALSE)
+df = outlierKD2(df, Num_of_Loan, rm=T, histogram=FALSE)
+df = outlierKD2(df, Num_Credit_Inquiries, rm=T, histogram=FALSE)
+df = outlierKD2(df, Monthly_Inhand_Salary, rm=T, histogram=FALSE)
+df = outlierKD2(df, Amount_invested_monthly, rm=T, histogram=FALSE)
+df = outlierKD2(df, Annual_Income, rm=T, histogram=FALSE)
+str(df)
+```
+
+```{r}
+## Removed NA from data
+df = na.omit(df)
+```
+
+
+# 3: EDA
+
+## 3.1 Histogram
+
+From graph one, two, three, four, eight and nine shows the normal distribution for the variables Credit_Mix, Credit_History_Age, Monthly_Balance, Num_of_Delayed_Payment, Num_Bank_Accounts, Num_Credit_card. Graph five, seven, twelve, thirteen shows that data is right-skewed for the variables Total_EMI_per_month, Outstanding_Debt, Monthly_Inhand_Salary, Annual_Income.
+
+```{r, histograms}
+
+df$Credit_Score <- as.factor(df$Credit_Score)
+
+library(ggplot2)
+
+ggplot(df, aes(x=Credit_Mix, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7, bins = 3)+
+  labs(title="Histogram of Credit_Mix")
+
+ggplot(df, aes(x=Credit_History_Age, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Credit_History_Age")
+
+ggplot(df, aes(x=Monthly_Balance, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Monthly_Balance")
+
+ggplot(df, aes(x=Num_of_Delayed_Payment, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Num_of_Delayed_Payment")
+
+ggplot(df, aes(x=Total_EMI_per_month, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Total_EMI_per_month")
+
+ggplot(df, aes(x=Age, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Age")
+
+ggplot(df, aes(x=Outstanding_Debt, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Outstanding_Debt")
+
+ggplot(df, aes(x=Num_Bank_Accounts, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7, bins = 12)+
+  labs(title="Histogram of Num_Bank_Accounts")
+
+ggplot(df, aes(x=Num_Credit_Card, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7, bins = 12)+
+  labs(title="Histogram of Num_Credit_Card")
+
+ggplot(df, aes(x=Num_of_Loan, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7, bins = 12)+
+  labs(title="Histogram of Num_of_Loan")
+
+ggplot(df, aes(x=Num_Credit_Inquiries, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7, bins = 15)+
+  labs(title="Histogram of Num_Credit_Inquiries")
+
+ggplot(df, aes(x=Monthly_Inhand_Salary, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Monthly_Inhand_Salary")
+
+ggplot(df, aes(x=Annual_Income, fill = Credit_Score, colour = Credit_Score)) +
+  geom_histogram(alpha = 0.7)+
+  labs(title="Histogram of Annual_Income")
+
+df$Credit_Score <- as.integer(df$Credit_Score)
+
+```
+
+
+## 3.2 Chi-squared
+From the chi-squared test we can say that the credit mix is dependent on the credit score.
+```{r}
+
+mix = table(df$Credit_Mix, df$Credit_Score)
+rownames(mix) <- c("Bad","Standard","Good")
+xkabledply(mix, title="Contingency table for Credit_Mix vs Credit_Score")
+chitest = chisq.test(mix)
+print(chitest)
+```
+
+
+
+## 3.3 Boxplots
+According the first box plot that is for Monthly Balance we can see that the median goes increasing as the score goes increasing that is more monthly balance can help to get good credit score. From the second box plot for credit history age we can see that the median goes increasing as the score goes increasing that is more credit history age can help to get good credit score. From the third box plot for number of credit cards we can see that the median goes decreasing as the score increases, that is having more number of credit cards can result in bad credit score and vise versa. Same case we get to see from the box plot four that is more number of credit inquires will re sult in bad credit score. Box plot five also suggest that having more outstandingdebt will result in bad credit score.
+
+```{r}
+library(ggplot2)
+df$Credit_Score <- factor(df$Credit_Score , levels=c('1', '2', '3'))
+
+# Credit Score & Monthly_Balance 
+ggplot(df, aes(x=Credit_Score, y=Monthly_Balance)) + geom_boxplot( color=c("red","green","blue")) + 
+  labs(title="Boxplot of the Monthly Balance with different Credit Scores", x="Credit Score", y = "Monthly Balance")
+
+# Credit Score & Credit_History_Age
+ggplot(df, aes(x=Credit_Score, y=Credit_History_Age)) + geom_boxplot( colour=c("red","green","blue")) + 
+  labs(title="Boxplot of the Credit History Age with different Credit Scores", x="Credit Score", y = "Credit History Age")
+
+# Credit Score & Num_Credit_Card
+ggplot(df, aes(x=Credit_Score, y=Num_Credit_Card)) + geom_boxplot( colour=c("red","green","blue")) + 
+  labs(title="Boxplot of the Number of Credit Cards with different Credit Scores", x="Credit Score", y = "Number of Credit Cards")
+
+# Credit Score & Num_Credit_Inquiries
+ggplot(df, aes(x=Credit_Score, y=Num_Credit_Inquiries)) + geom_boxplot( colour=c("red","green","blue")) + 
+  labs(title="Boxplot of the Number of Credit Inquiries with different Credit Scores", x="Credit Score", y = "Number of Credit Inquiries")
+
+# Credit Score & Outstanding_Debt 
+ggplot(df, aes(x=Credit_Score, y=Outstanding_Debt)) + geom_boxplot( colour=c("red","green","blue")) + 
+  labs(title="Boxplot of the Outstanding Debt with different Credit Scores", x="Credit Score", y = "Outstanding Debt")
+
+```
+
+
+## 3.4 ANOVA
+
+The ANOVA test shows that p-values for each model shows below 0.05, which reject the null. Based on the results, we can conclude that the averages of the monthly balance, the credit history age, the number of credit cards, the number of credit inquiries, outstanding debt between the three credit-score groups are not significantly the same.
+
+```{r}
+# Credit Score & Monthly_Balance 
+anova1 = aov(Monthly_Balance ~ Credit_Score, data=df)
+anova1
+names(anova1)
+xkabledply(anova1, title = "ANOVA result summary the Monthly Balance between Credit Score")
+
+# Credit Score & Credit_History_Age
+anova2 = aov(Credit_History_Age ~ Credit_Score, data=df)
+anova2
+names(anova2)
+xkabledply(anova2, title = "ANOVA result summary the Credit History Age between Credit Score")
+tukeyAoV <- TukeyHSD(anova2)
+tukeyAoV
+
+# Credit Score & Num_Credit_Card
+anova3 = aov(Num_Credit_Card ~ Credit_Score, data=df)
+anova3
+names(anova3)
+xkabledply(anova3, title = "ANOVA result summary the Numer of Credit Cards between Credit Score")
+tukeyAoV <- TukeyHSD(anova3)
+tukeyAoV
+
+# Credit Score & Num_Credit_Inquiries
+anova4 = aov(Num_Credit_Inquiries ~ Credit_Score, data=df)
+anova4
+names(anova4)
+xkabledply(anova4, title = "ANOVA result summary the Numer of Credit Inquiries between Credit Score")
+tukeyAoV <- TukeyHSD(anova4)
+tukeyAoV
+
+# Credit Score & Outstanding_Debt
+anova5 = aov(Outstanding_Debt ~ Credit_Score, data=df)
+anova5
+names(anova5)
+xkabledply(anova5, title = "ANOVA result summary the Outstanding Debt between Credit Score")
+tukeyAoV <- TukeyHSD(anova5)
+tukeyAoV
+
+df$Credit_Score <- as.integer(df$Credit_Score)
+```
+
+## 3.5 Correlation Table
+```{r}
+
+loadPkg("corrplot")
+dfscale = data.frame(scale(df))
+str(dfscale)
+dfcor = cor(dfscale,use='complete.obs') 
+dfcor
+corrplot.mixed(dfcor)
+corrplot(dfcor, type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+```
+
+
+# SMART Question 1 : Do these five independent variables affect the credit score?
+
+In the USA, FICO scores are widely used. FICO scores are calculated using many different pieces of credit data in your credit report. This data is grouped into five categories: payment history, amounts owed, length of credit history, new credit and credit mix.
+
+Out of this five vategories we only have Monthly_Balance, Credit_History_Age and Credit_Mix this three variables. So lets try to build the linear model with the help of this three variables and credit score will be our dependent variable.
+
+
+```{r}
+fit <- lm(Credit_Score ~ Monthly_Balance +Credit_History_Age+Credit_Mix, data = dfscale)
+summary(fit)
+```
+
+## Q1 Answer:
+From the result we got from the linear model, p-values are less than the standard value(0.05) for all the three variables and hence we can say that this three variables significantly increases the credit score of the person. 
+
+But there are few other variables in the data set that we feel can change the credit score of the person, so lets try to build the models using those variable. 
+
+# SMART Question 2 : Which model is considered the best fit model? 
+
+To check which variable can really affect the credit score of the person we performed the feature selection technic where we used the BIC, CP and adjusted R^2 evaluation.
+
+```{r include=FALSE}
+### Featrue Selection
+loadPkg("leaps")
+reg1 <- regsubsets(Credit_Score~. , data = dfscale, nvmax = 10, nbest = 2, method ="exhaustive")
+summary(reg1)
+res.sum <- summary(reg1)
+data.frame(
+  Adj.R2 = which.max(res.sum$adjr2),
+  CP = which.min(res.sum$cp),
+  BIC = which.min(res.sum$bic))
+
+plot(reg1, scale = "adjr2", main = "Adjusted R^2")
+plot(reg1, scale = "r2", main = "R^2")
+plot(reg1, scale = "bic", main = "BIC")
+plot(reg1, scale = "Cp", main = "Cp")
+```
+
+```{r include=FALSE}
+### Forward Selection
+reg.forward10 <- regsubsets(Credit_Score~., data = dfscale, nvmax = 10, nbest = 1, method = "forward")
+plot(reg.forward10, scale = "adjr2", main = "Adjusted R^2")
+plot(reg.forward10, scale = "bic", main = "BIC")
+plot(reg.forward10, scale = "Cp", main = "Cp")
+# summary(reg.forward10)
+
+### non-linear model
+regnonlin.forward10 <-regsubsets(Credit_Score~., data = dfscale, nvmax = 10, method="forward")
+plot(regnonlin.forward10, scale = "adjr2", main = "Adjusted R^2")
+plot(regnonlin.forward10, scale = "bic", main = "BIC")
+plot(regnonlin.forward10, scale = "Cp", main = "Cp")
+summary(regnonlin.forward10)
+
+### Backward Selection
+reg.back10 <- regsubsets(Credit_Score~., data = dfscale, method = "backward", nvmax = 10, nbest = 2)
+plot(reg.back10, scale = "adjr2", main = "Adjusted R^2")
+plot(reg.back10, scale = "bic", main = "BIC")
+plot(reg.back10, scale = "Cp", main = "Cp")
+summary(reg.back10)
+
+### Sequential Replacement seqrep 
+reg.seqrep <- regsubsets(Credit_Score~., data = dfscale, nvmax = 10, nbest = 2 , method = "seqrep")
+plot(reg.seqrep, scale = "adjr2", main = "Adjusted R^2")
+plot(reg.seqrep, scale = "bic", main = "BIC")
+plot(reg.seqrep, scale = "Cp", main = "Cp")
+
+# Alternative plots
+loadPkg("car")
+summaryRegForward = summary(reg1)
+# Adjusted R2
+car::subsets(reg1, statistic="adjr2", legend = FALSE, min.size = 2, main = "Adjusted R^2")
+# Mallow Cp
+subsets(reg1, statistic="cp", legend = FALSE, min.size = 4, main = "Mallow Cp")
+abline(a = 1, b = 1, lty = 3)
+
+```
+
+
+```{r}
+## Better Regression Model with higher adjsted R^2, lower BIC and Cp
+# Linear Regression Based on Feature Selection Result on Adj R^2
+fit1 <- lm(Credit_Score ~ Credit_Mix+Outstanding_Debt+Num_Credit_Card+Num_Credit_Inquiries, data = dfscale)
+summary(fit1)
+
+# Linear Regression Based on Feature Selection Result on BIC
+fit2 <- lm(Credit_Score ~ Credit_Mix+Num_Credit_Card+Num_Credit_Inquiries, data = dfscale)
+summary(fit2)
+
+# Linear Regression Based on Feature Selection Result on Cp: Let's use this logit model.
+fit3 <- lm(Credit_Score ~ Credit_Mix+Credit_History_Age+Num_of_Delayed_Payment+Total_EMI_per_month+Age+Outstanding_Debt+Num_Credit_Card+Num_Credit_Inquiries+Amount_invested_monthly+Month, data = dfscale)
+summary(fit3)
+```
+All the models is having the same adjusted r2 and residual error is also same. So the model with least number of independent variables will be chosen because we want to make model simpler.
+
+```{r}
+## The Best Regression Model
+
+fit4 <- lm(Credit_Score ~ Credit_Mix+Num_Credit_Card+Num_Credit_Inquiries, data = dfscale)
+summary(fit4)
+```
+
+## Q2 Answer:
+After the feature selection process, we tried to build the best fit model having higher adjusted R^2, lower BIC and Cp. All three models had the same residual error and adjusted R^2. We chose the evaluation technique BIC because it contains least number of independent variables. 
+
+
+# SMART Question 3 :
+
+From the previous analysis for Question 1, we found that three variables - amounts owed, length of credit history, and credit mix - are related to credit score in Linear Regression. Since we wanted to verify if those three variables listed above will increase or decrease the chance of being in the good credit score group, we tried to test these by using logit regression. Although we know that questions 1 and 3 are the same, we also know that logit and linear regression serve different purposes. Both being supervised machine learning algorithms, Linear regression is used for predicting continuous values, whereas logistic regression is used in the binary classification of values. So we decided to move on to the logit analysis.
+
+Our third SMART question is "Can we verify that the three variables - amounts owed, length of credit history, and credit mix - listed above will increase or decrease the chance of being in the good-standard credit score group?"
+
+For your information, we want to clarify that Question 1 and Question 3 are the same. The only difference is that we have used different techniques for the analysis. For question 1, we have used linear regression and for question 3, we will use logit regression for the analysis. However, since there were three different groups in credit score, we had to decide what should be 0 and 1 for y to test our question. Therefore, we tried to test three different models using differently operationalized y and find the right proper y as our dependent variable. 
+
+We made three different models, the first model is y=0 for the poor-standard group and y=1 for the good group. The second model is y=0 for the poor and y=1 for standard-good and the third model is y=0 for the poor and y=1 for the good-credit score group. 
+
+When we regress three logit regression models for 3 variables - monthly balance, credit history age, and credit mix, the second model (y=0 for poor, y=1 for standard-good) shows that all coefficients are greater than 0 and have a p-value below 0.05. The other 2 models - model 1 and 3 - shows that some p-values are over 0.05. 
+
+For model evaluations, we used a confusion matrix and ROC/AUC(area-under-curve) for each model. We know that AUC prefers 0.8 or higher and models 1 and 3 show an AUC level of 0.85 but model 2 shows 0.74, which is between 0.7 and 0.8 and still acceptable. 
+
+```{r}
+## Logit Regressions for 3 variables
+
+## Model1: poor-standard 0, good 1
+df <- transform(df, Credit_Score1 = ifelse((Credit_Score==1) | (Credit_Score==2), 0, 1))
+df$Credit_Score1 <- factor(df$Credit_Score1 , levels=c(0, 1))
+Logit1 <- glm(Credit_Score1 ~ Monthly_Balance +Credit_History_Age+Credit_Mix, data = df, family = "binomial")
+summary(Logit1)
+
+## Model2: poor 0, standard-good 1 : We decided to use this model.
+df <- transform(df, Credit_Score2 = ifelse((Credit_Score==2) | (Credit_Score==3), 1, 0))
+df$Credit_Score2 <- factor(df$Credit_Score2 , levels=c(0, 1))
+Logit2 <- glm(Credit_Score2 ~ Monthly_Balance +Credit_History_Age+Credit_Mix, data = df, family = "binomial")
+summary(Logit2)
+
+## Model3: poor 0, good 1
+subset_logit <- subset(df, Credit_Score!=2)
+subset_logit <- transform(df, Credit_Score3 = ifelse((Credit_Score==3), 1, 0))
+Logit3 <- glm(Credit_Score3 ~ Monthly_Balance+Credit_History_Age+Credit_Mix, data = subset_logit, family = "binomial")
+summary(Logit3)
+
+```
+
+```{r}
+### Model Evaluation: Confusion Matrix
+loadPkg("regclass")
+xkabledply(confusion_matrix(Logit1), title = "Confusion matrix from Logit Model1")
+xkabledply(confusion_matrix(Logit2), title = "Confusion matrix from Logit Model2")
+xkabledply(confusion_matrix(Logit3), title = "Confusion matrix from Logit Model3")
+unloadPkg("regclass")
+```
+
+```{r HosmerLemeshow}
+### Model Evaluation: Hosmer and Lemeshow test 
+#loadPkg("ResourceSelection") 
+#admitLogitHoslem = hoslem.test(df$Credit_Score1, fitted(Logit1)) 
+#admitLogitHoslem = hoslem.test(df$Credit_Score2, fitted(Logit2))
+#admitLogitHoslem = hoslem.test(subset_logit$Credit_Score3, fitted(Logit3)) 
+#unloadPkg("ResourceSelection") 
+
+```
+
+
+```{r include=FALSE}
+### Model Evaluation: Receiver-Operator-Characteristic (ROC) curve and Area-Under-Curve (AUC)
+
+loadPkg("pROC")
+
+## Model1: poor-standard 0, good 1 : The model is overfitted.
+#df$prob <- NA
+prob=predict(Logit1, type = "response")
+df$prob=prob
+h <- roc(Credit_Score1~prob, data=df)
+auc(h) # 0.85 
+plot(h)
+
+## Model2: poor 0, standard-good 1 : We decied to use this model.
+prob=predict(Logit2, type = "response")
+df$prob=prob
+h <- roc(Credit_Score2~prob, data=df)
+auc(h) # 0.74 area-under-curve prefer 0.8 or higher.
+plot(h)
+
+## Model3: poor 0, good 1 : The number of observation is below 3000.
+prob=predict(Logit3, type = "response")
+subset_logit$prob=prob
+h3 <- roc(Credit_Score3~prob, data=subset_logit)
+auc(h3) # 0.85 area-under-curve prefer 0.8 or higher.
+plot(h3)
+
+unloadPkg("pROC")
+```
+
+```{r}
+### Model Comparison
+## Model2: poor 0, standard-good 1
+Logit2 <- glm(Credit_Score2 ~ Monthly_Balance +Credit_History_Age+Credit_Mix, data = df, family = "binomial")
+summary(Logit2)
+## Linear Regression
+fit <- lm(Credit_Score ~ Monthly_Balance +Credit_History_Age+Credit_Mix, data = dfscale)
+summary(fit)
+```
+
+## Q3 Answer:
+logit-value > 0 means more likely to be in the good credit score group than the poor credit score group. Since the p-values are all lower than 0.05 in model 2, based on that model we can say that the more amounts owed, higher credit mix, and longer length of credit history increase the likelihood to be in a good-standard group.
+
+# SMART Question 4 :
+Can we predict the probability of a good credit score with sample information by using the best-fit model? For example: If we know the information of Sudhanshu and Upmanyu, can we predict the probability of getting a higher credit score?
+
+First, we tried to find the best fit model and included more variables including the variables used in the previous analysis – number of credit cards, bank accounts, loans, credit inquiries, and monthly in-hand salary – in our logit model. Since we focused on model 2 for our analysis in Q3, we also continued to see model 2 more deeply. We tried to find models having higher adjusted-R squared, lower BIC, and lower cp. Once we selected variables from each selection progress, we found that the model with lower BIC contains the least number of independent variables.
+
+Second, based on the results of BIC, the model shows that outstanding debt, number of credit cards, and number of credit Inquiries are statistically significant with Credit Score.
+
+Lastly, we put the information of Sudhanshu and Upmanyu into the model we found and tried to predict the probability.  
+
+```{r include=FALSE}
+### Feature Selection
+loadPkg("leaps")
+
+## Model1: poor-standard 0, good 1
+subset1 = subset(df, select = -c(Credit_Score, Credit_Score2, prob))
+reg.leaps <- regsubsets(Credit_Score1~., data = subset1, nbest = 1, method = "exhaustive")
+plot(reg.leaps, scale = "adjr2", main = "Adjusted R^2")
+plot(reg.leaps, scale = "bic", main = "BIC")
+plot(reg.leaps, scale = "Cp", main = "Cp")
+
+```
+
+```{r include=FALSE}
+
+## Model2: poor 0, standard-good 1
+subset2 = subset(df, select = -c(Credit_Score, Credit_Score1, prob))
+reg.leaps <- regsubsets(Credit_Score2~., data = subset2, nbest = 1, method = "exhaustive")
+plot(reg.leaps, scale = "adjr2", main = "Adjusted R^2")
+plot(reg.leaps, scale = "bic", main = "BIC")
+plot(reg.leaps, scale = "Cp", main = "Cp")
+
+## Model3: poor 0, good 1
+subset3 = subset(subset_logit, select = -c(Credit_Score, Credit_Score1, Credit_Score2, prob))
+reg.leaps <- regsubsets(Credit_Score3~., data = subset3, nbest = 1, method = "exhaustive")
+plot(reg.leaps, scale = "adjr2", main = "Adjusted R^2")
+plot(reg.leaps, scale = "bic", main = "BIC")
+plot(reg.leaps, scale = "Cp", main = "Cp")
+
+#unloadPkg("leaps")
+```
+
+
+```{r}
+## Better Logit Model2 with higher adjusted R^2, lower BIC and Cp
+## Model2: poor 0, standard-good 1
+# Logit Regression Based on Feature Selection Result on Adj R^2
+BLogit1 <- glm(Credit_Score2 ~ Credit_Mix+Outstanding_Debt+Num_Credit_Card+Num_of_Loan+Num_Credit_Inquiries, data = subset2, family = "binomial")
+summary(BLogit1)
+
+# Logit Regression Based on Feature Selection Result on BIC
+BLogit2 <- glm(Credit_Score2 ~ Outstanding_Debt+Num_Credit_Card+Num_Credit_Inquiries, data = subset2, family = "binomial")
+summary(BLogit2)
+
+# Logit Regression Based on Feature Selection Result on Cp: Let's use this logit model.
+BLogit3 <- glm(Credit_Score2 ~ Credit_Mix+Credit_History_Age+Outstanding_Debt+Num_Bank_Accounts+ +Num_Credit_Card+Num_of_Loan+Num_Credit_Inquiries+Month, data = subset2, family = "binomial")
+summary(BLogit3)
+```
+
+
+
+```{r}
+# The best logit model
+# Logit Regression Based on Feature Selection Result on BIC: Let's use this logit model.
+BLogit4 <- glm(Credit_Score2 ~ Outstanding_Debt+Num_Credit_Card+Num_Credit_Inquiries, data = subset2, family = "binomial")
+
+summary(BLogit4)
+loadPkg("regclass")
+xkabledply(confusion_matrix(BLogit4), title = "Confusion matrix from Logit Model4")
+```
+
+```{r}
+## Let's compare the predicted probability of Sudanshu and Upmanyu.
+# Sudanshu # Upmanyu
+newdata <- with(subset2, data.frame(Outstanding_Debt=c(800, 500), Num_Credit_Card=c(6, 8), Num_Credit_Inquiries=c(2,10)))
+predict(BLogit4, newdata, type="response")
+```
+
+## Q4 Answer:
+We compared the predicted probability of Sudanshu and Upmanyu. Guess whose score is higher? We see an 88.7% chance that Sudanshu will get the standard-good score, otherwise, Upmanyu's chance is 49.6%.
+
+
+```{r}
+#dataset: subset2 
+#y: Credit_Score2
+#x: Monthly_Balance +Credit_History_Age+Credit_Mix
+```
+
+
+# SMART Question 5 (KNN) :
+What is optimal number of n that can be grouped out of the data so that KNN accuracy is highest? 
+
+### Analysis
+K-Nearest Neighbors Algorithm. The k-nearest neighbors algorithm, also known as KNN or k-NN, is a non-parametric, supervised learning classifier, which uses proximity to make classifications or predictions about the grouping of an individual data point.
+
+### Preparing the Dataset for KNN
+Firstly, we are scaling all the independent continuous variables so that the knn can be applied easily.
+Secondly, we will fill all the nan values with the mean of the column
+Thirdly, we will split the dataset into train and test. This is because we will use train data on model and evaluate on test data, which is unseen data.
+
+Now, we plot the accuracy versus k graph, to see how 'k' in knn affects the accuracy when it is increased. So, to obtain the optimal k we check the graph using the elbow method, which means that we check where is 'elbow' is located. That point is optimal k in knn.
+
+After that we find accuracy of knn by checking confusion matrix on test data (unseen data). The accuracy of test data is 70 percent.
+
+```{r}
+df_scale_logit <- data.frame(scale(df[,c("Credit_Mix","Credit_History_Age","Monthly_Balance","Num_of_Delayed_Payment","Total_EMI_per_month","Age","Outstanding_Debt","Num_Bank_Accounts","Num_Credit_Card","Num_of_Loan","Num_Credit_Inquiries","Monthly_Inhand_Salary","Amount_invested_monthly","Annual_Income","Month")]))
+
+# df_scale_logit['Credit_Score'] = df['Credit_Score']
+
+str(df_scale_logit)
+# df_scale_logit$Credit_Score <- factor(df_scale_logit$Credit_Score)
+# df_scale_logit$Credit_Score2 <- factor(df_scale_logit$Credit_Score2)
+```
+
+```{r}
+library(ISLR)
+library(class)
+library("zoo")
+df_scale_logit1 <- df_scale_logit  # Duplicate data frame
+for(i in 1:ncol(df_scale_logit)) { # Replace NA in all columns
+  df_scale_logit[ , i][is.na(df_scale_logit1[ , i])] <- mean(df_scale_logit1[ , i], na.rm = TRUE)
+}
+
+sample <- sample(2, nrow(df_scale_logit), replace=TRUE, prob=c(0.7,0.3))
+train  <- df_scale_logit[sample==1, ]
+test   <- df_scale_logit[sample==2, ]
+
+# install.packages("zoo")         
+# Install & load zoo package
+
+df_scale_logit['Credit_Score'] = df['Credit_Score']
+df_scale_logit$Credit_Score <- factor(df_scale_logit$Credit_Score)
+
+df_scale_logit.trainlabel <- df_scale_logit[sample==1, 16]
+df_scale_logit.testlabel <- df_scale_logit[sample==2, 16]
+
+# df_scale_logit.trainlabel
+
+knn_m1 <- knn(train = train, test = test, cl=df_scale_logit.trainlabel, k=7)
+
+loadPkg("gmodels")
+IRISPREDCross <- CrossTable(df_scale_logit.testlabel, knn_m1, prop.chisq = FALSE)
+library(caret)
+cm = confusionMatrix(knn_m1, reference = df_scale_logit.testlabel ) # from caret library
+  # print.confusionMatrix(cm)
+# df_scale_logit.testlabel
+
+cmaccu = cm$overall['Accuracy']
+print( paste("Total Accuracy = ", cmaccu ) )
+
+cm
+```
+
+```{r}
+chooseK = function(k, train_set, val_set, train_class, val_class){
+  
+  # Build knn with k neighbors considered.
+  set.seed(1)
+  class_knn = knn(train = train_set,    #<- training set cases
+                  test = val_set,       #<- test set cases
+                  cl = train_class,     #<- category for classification
+                  k = k) #,                #<- number of neighbors considered
+                  # use.all = TRUE)       #<- control ties between class assignments. If true, all distances equal to the k-th largest are included
+  
+  tab = table(class_knn, val_class)
+  
+  # Calculate the accuracy.
+  accu = sum(tab[row(tab) == col(tab)]) / sum(tab)                         
+  cbind(k = k, accuracy = accu)
+}
+
+# The sapply() function plugs in several values into our chooseK function.
+# function(x)[function] allows you to apply a series of numbers
+# to a function without running a for() loop.
+knn_different_k = sapply(seq(1, 21, by = 2),  #<- set k to be odd number from 1 to 21
+                         function(x) chooseK(x, 
+                                             train_set = train,
+                                             val_set = test,
+                                             train_class = df_scale_logit.trainlabel,
+                                             val_class = df_scale_logit.testlabel))
+
+# Reformat the results to graph the results.
+str(knn_different_k)
+knn_different_k = data.frame(k = knn_different_k[1,],
+                             accuracy = knn_different_k[2,])
+
+# Plot accuracy vs. k.
+# install.packages("ggplot2")
+loadPkg("ggplot2")
+
+ggplot(knn_different_k,
+       aes(x = k, y = accuracy)) +
+  geom_line(color = "red", size = 1.5) +
+  geom_point(size = 3) + 
+  labs(title = "Accuracy vs k-nearest-neighbour")
+
+```
+
+
+
+# SMART Question 6 (Decision Tree) :
+Would Sudhanshu and Upmanyu’s credit score results be the same by tree model?
+
+### About Decision Tree
+A decision tree is a supervised learning algorithm that is used for classification and regression modeling. It helps us visualize how an algorithm leads to specific outcomes. They require very little data preparation. In particular, they don’t require feature scaling or centering.
+
+* Classification trees: We use them to analyze categorical dependent variable. The trees determine whether an event happened or didn’t happen. Usually, this involves a “yes” or “no” outcome. 
+
+* Regression trees: They are used for Quantitative dependent variable. They predict continuous values based on previous data or information sources
+
+### Analysis
+We divided the credit score into two groups. One group are the data of bad credit score, which presents 0 in the dataset. The other group includes the data of standard and good credit score, presenting 1 in the dataset.
+
+```{r}
+loadPkg("rpart.plot")
+
+# Tree Model - All Variables
+set.seed(1)
+tree1 <- rpart(Credit_Score2 ~ ., data = subset2, method="class", control = list(maxdepth = 4) )
+printcp(tree1) # display the results 
+```
+
+Cross-Validation is a method to estimate how accurately the model predicts. From the list of complexity parameter (cp) values, we can select the one having the least cross-validated error and use it to prune the tree. The value of cp should be least, so that the cross-validated error rate is minimum.
+
+```{r}
+plotcp(tree1) # visualize cross-validation results 
+summary(tree1) # detailed summary of splits
+```
+
+The cp plot above provides a graphical representation to the cross validated error summary. The cp values are plotted against the geometric mean to depict the deviation until the minimum value is reached. In this model, the minimum X-val Relative Error is 0.64732 and the cp is 0.01.
+
+```{r}
+rpart.plot(tree1, main="Classification Tree for Credit_Score (All Variables)")
+# Tree Model - Four Significant Variables
+#set.seed(1)
+#tree2 <- rpart(Credit_Score2 ~ Credit_Mix+Outstanding_Debt+Num_Credit_Card+Num_Credit_Inquiries, data = subset2, method="class", control = #list(maxdepth = 4) )
+#printcp(tree2) # display the results 
+#plotcp(tree2) # visualize cross-validation results 
+#summary(tree2) # detailed summary of splits
+#rpart.plot(tree2, main="Classification Tree for Credit_Score (Four Variables)")
+```
+
+In the classification tree model above, there are four nodes. These nodes are determined by maximizing information gain, or minimal entropy. To answer the 6th SMART Question, we should start from the top node. If the `Outstanding_Debt` >= 1499, then we go down to the root’s left child node. If the `Outstanding_Debt` is less then 1499, go down to the right, and so on.  
+
+By the tree plot, we can conclude that the results of credit score for Sudhanshu and Upmanyu are the same as the prediction by logic regression.
+
+# Conclusion
+
+1. The credit score is substantially impacted by the three characteristics indicated by FICO: the total amount of debt, the duration of credit history, and the types of credit used. We have located it.
+
+2. Although having a diverse mix of credit accounts might raise credit ratings, having a large number of credit cards and queries can lower credit scores.
+
+3. You are more likely to be placed in the good-standard category if you have a higher credit mix, owe larger sums of money, have a longer credit history, and have been using credit for longer.
+
+4. Refrain from checking your credit score too frequently.
+
+5. The outcomes of using the decision tree and the prediction made using logic regression are the same.
+

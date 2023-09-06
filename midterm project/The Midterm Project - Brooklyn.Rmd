@@ -1,0 +1,194 @@
+---
+title: "The Midterm Project of Thunder, Team 2"
+date: "2022-10-21"
+output:  
+    rmdformats::readthedown:
+      toc_float: true
+      toc_depth: 3
+      number_sections: true
+      code_folding: hide
+      includes:
+        before_body: header.html
+---
+
+```{r setup, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+# knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+# knitr::opts_chunk$set(include = F)
+# knitr::opts_chunk$set(echo = TRUE)
+options(scientific=T, digits = 3) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+```
+
+### Load Data
+
+```{r}
+midterm = data.frame(read.csv("dataset/train.csv"))
+midterm2 = subset(midterm, Month=="January")
+
+midterm2_subset <- midterm2[ , names(midterm2) %in% c("ID", "Name", "Age", "Annual_Income", "Num_Bank_Accounts", "Num_Credit_Card", "Interest_Rate", "Num_of_Loan", "Num_of_Delayed_Payment", "Credit_Mix", "Total_EMI_per_month", "Monthly_Balance", "Credit_Score")]
+str(midterm2_subset)
+```
+
+### Data Cleaning
+
+```{r}
+
+# midterm2_subset =
+library('dplyr')
+library('purrr')
+library('tidyr')
+library("stringr")
+
+# Brooklyn
+# Removed Special Characters
+# Changed the data type from "Char" to "int" & "num" 
+
+midterm2_subset$Age <- gsub("[[:punct:]]", "", midterm2_subset$Age)
+midterm2_subset$Age <- as.integer(midterm2_subset$Age)
+midterm2_subset$Annual_Income <- as.numeric(sub("_", "", midterm2_subset$Annual_Income))
+```
+# HaeLee 
+# Removed Special Characters of "Num_of_Loan" & "Num_of_Delayed_Payment" 
+```{r}
+midterm2_subset$Num_of_Loan <- gsub("[[:punct:]]", "", midterm2_subset$Num_of_Loan)
+midterm2_subset$Num_of_Delayed_Payment <- gsub("[[:punct:]]", "", midterm2_subset$Num_of_Delayed_Payment)
+midterm2_subset$Num_of_Loan <- as.integer(midterm2_subset$Num_of_Loan)
+# # Changed the data type from "char" to "num"
+midterm2_subset$Num_of_Delayed_Payment <- as.integer(midterm2_subset$Num_of_Delayed_Payment)
+# # Removed 'Num_of_Loan'< 0 
+midterm2_subset <- midterm2_subset[midterm2_subset['Num_of_Loan'] >= 0, ]
+```
+
+```{r}
+# Upmanyu
+# Removed Special Characters of "Credit_Mix"
+midterm2_subset <- midterm2_subset[midterm2_subset['Credit_Mix'] != "_",]
+# Converted "char" of "Credit_Mix" into "int", 
+# from "Good" to 3, "Standard" to 2, and "Bad" to 1. 
+midterm2_subset$Credit_Mix[midterm2_subset$Credit_Mix == 'Bad'] <- 1
+midterm2_subset$Credit_Mix[midterm2_subset$Credit_Mix == 'Standard'] <- 2
+midterm2_subset$Credit_Mix[midterm2_subset$Credit_Mix == 'Good'] <- 3
+```
+
+# Sudhanshu
+# Rounded "Total_EMI_per_month"
+```{r}
+midterm2_subset["Total_EMI_per_month"] <- 
+round(midterm2_subset["Total_EMI_per_month"], digits = 2)
+
+midterm2_subset$Monthly_Balance <- as.integer(midterm2_subset$Monthly_Balance)
+
+midterm2_subset["Monthly_Balance"] <- round(midterm2_subset["Monthly_Balance"], digits = 2)
+
+# Removed Special Characters of "Credit_score_level"
+midterm2_subset <- midterm2_subset[midterm2_subset['Credit_Score'] != "_",]
+# Converted "char" of "Credit_score_level" into "int", 
+# from "Good" to 3, "Standard" to 2, and "Bad" to 1. 
+midterm2_subset$Credit_Score[midterm2_subset$Credit_Score == 'Poor'] <- 1
+midterm2_subset$Credit_Score[midterm2_subset$Credit_Score == 'Standard'] <- 2
+midterm2_subset$Credit_Score[midterm2_subset$Credit_Score == 'Good'] <- 3
+
+midterm2_subset$Credit_Score <- as.integer(midterm2_subset$Credit_Score)
+midterm2_subset$Credit_Mix <- as.integer(midterm2_subset$Credit_Mix)
+
+midterm2_subset = na.omit(midterm2_subset)
+midterm2_subset<-midterm2_subset[!(midterm2_subset$Age < 18),]
+```
+
+### Data Structure
+
+```{r}
+summary(midterm2_subset)
+str(midterm2_subset)
+```
+
+# Gredit Mix
+
+## QQ-Plot of Credit Mix
+
+```{r}
+
+library(ggplot2)
+library(ezids)
+
+# QQ-Plot
+
+qqnorm(midterm2_subset$Credit_Mix, col= "dodgerblue2", datax = FALSE, main="Credit_Mix")
+qqline(midterm2_subset$Credit_Mix, col= "firebrick3")
+
+```
+
+## Histogram of Credit Mix
+
+```{r}
+
+midterm2_subset$Credit_Score[midterm2_subset$Credit_Score == 1 ] <- 'Poor'
+midterm2_subset$Credit_Score[midterm2_subset$Credit_Score == 2 ] <- 'Standard'
+midterm2_subset$Credit_Score[midterm2_subset$Credit_Score == 3 ] <- 'Good'
+midterm2_subset$Credit_Score <- factor(midterm2_subset$Credit_Score , levels=c('Poor', 'Standard', 'Good'))
+
+# Histogram
+ggplot(midterm2_subset, aes(x=Credit_Mix, fill = Credit_Score)) + geom_histogram(binwidth = 1) + ggtitle ("Credit_Mix") + xlab("Credit_Mix") + ylab("Total count")
+
+```
+
+Normal Q-Q Plot is a visual way to check if the data is normally distributed. The histogram and Q-Q Plot above show that the data of Credit_Mix follow normal distribution.
+
+
+## Boxplot of Credit Mix
+
+```{r}
+# Boxplot
+
+ggplot(midterm2_subset, aes(x=Credit_Score, y=Credit_Mix, fill = Credit_Score)) + geom_boxplot() + ggtitle("Credit_Mix vs Credit_Score")
+
+```
+
+## Chi-square Test for Credit Mix and Credit Score
+
+Whether Credit_Mix and Credit_Score are likely to be related or not
+
+```{r}
+# The Chi-square test of independence
+# check whether Credit_Mix and Credit_Score are likely to be related or not
+# The independence test tells us only whether there is a relationship or not; it does not tell us that one variable causes the other
+
+mix = table(midterm2_subset$Credit_Mix, midterm2_subset$Credit_Score)
+rownames(mix) <- c("Bad","Standard","Good")
+xkabledply(mix, title="Contingency table for Credit_Mix vs Credit_Score")
+
+chitest = chisq.test(mix)
+print(chitest)
+
+# expected values
+xkabledply(chitest$expected, title = "Cross table for the expected frequencies between Credit_Mix and Credit_Score")
+
+```
+
+## ANOVA Test of Credit Mix
+
+If there is difference in Credit_Mix between different Credit_Score
+Which group differs the most
+
+```{r}
+
+# ANOVA Test
+# H0: μ1 = μ2 = μ3 (There is no difference in Credit_Mix between different Credit_Score)
+# H1: Means are not all equal
+
+mix_aov = aov(Credit_Mix ~ Credit_Score, data = midterm2_subset)
+xkabledply(mix_aov)
+
+# P < 0.05, reject H0
+
+tukeyAoV <- TukeyHSD(mix_aov)
+print(tukeyAoV)
+
+# The group ??? differs the most
+
+```
